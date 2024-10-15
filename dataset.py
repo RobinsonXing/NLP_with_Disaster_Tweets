@@ -24,6 +24,7 @@ class TweetSet(Dataset):
     def __getitem__(self, index):
         text = str(self.data.iloc[index]['text'])
         other_features = self.data.iloc[index].drop('text').values  # 其他特征
+        other_features = other_features.astype(float)  # 强制转换为浮点数
 
         # BERT 分词
         encoding = self.tokenizer.encode_plus(
