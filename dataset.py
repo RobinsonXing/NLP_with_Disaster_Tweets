@@ -72,6 +72,10 @@ def load_and_process_data(mode:Literal['train', 'test']):
     all_data['location'] = all_data['location'].apply(lambda x: 'New York' if 'New York' in x else ('other' if x != 'unknown' else 'unknown'))
     locations = pd.get_dummies(all_data['location'], prefix='loc')
 
+    # 强制将独热编码结果转换为 float32 类型
+    keywords = keywords.astype(float)
+    locations = locations.astype(float)
+
     # 提取对应特征
     texts = all_data['text']
 
