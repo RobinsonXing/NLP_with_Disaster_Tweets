@@ -7,7 +7,7 @@ from transformers import BertTokenizer
 import torch
 
 class TweetSet(Dataset):
-    def __init__(self, data, labels=None, max_len=128):
+    def __init__(self, data, labels=None, max_len=256):
         """
         data: 经过处理的特征数据 (pandas DataFrame)
         labels: 标签列 (可选, 默认为 None)
@@ -61,19 +61,18 @@ def load_and_process_data(mode:Literal['train', 'test']):
 
     # 处理 keyword 列：独热编码，并填充空值为 'unknown'
     all_data['keyword'].fillna('unknown', inplace=True)
-    all_data = pd.get_dummies(all_data, columns=['keyword'], prefix='kw')
+    keywords = pd.get_dummies(all_data, columns=['keyword'], prefix='kw')
 
     # 处理 location 列
     all_data['location'] = all_data['location'].fillna('unknown')
     all_data['location'] = all_data['location'].apply(lambda x: 'New York' if 'New York' in x else ('other' if x != 'unknown' else 'unknown'))
-    all_data = pd.get_dummies(all_data, columns=['location'], prefix='loc')
+    locations = pd.get_dummies(all_data, columns=['location'], prefix='loc')
 
     # 提取对应特征
-    text = all_data['text']
-    other = all_data.drop(['text'])
+    texts = all_data['text']
 
     if mode == 'train':
-        label = train_data['target']
-        return other.iloc[:length], text.iloc[:length], label
+        labels = train_data['target']
+        return keywords.iloc[:length], locations.iloc[:length], texts.iloc[:length], labels
     else:
-        return other.iloc[length:], text.iloc[length:]
+        return keywords.iloc[length:], locations.iloc[length:], texts.iloc[length:]

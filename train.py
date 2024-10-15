@@ -7,16 +7,24 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import KFold
 from transformers import AdamW, get_linear_schedule_with_warmup
 
-from data import TweetSet, load_and_process_data
+from dataset import TweetSet, load_and_process_data
 from model import MultimodalModel
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train a multimodal BERT model")
+    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
+    parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
+    parser.add_argument('--epochs', type=int, default=3, help='Number of epochs')
+    parser.add_argument('--wandb_project', type=str, default='bert-multimodal', help='wandb project name')
+    return parser.parse_args()
 
 def train(args):
     # 初始化 wandb
     wandb.init(project=args.wandb_project)
     
     # 加载并处理数据
-    keyword_features, text_data, labels = load_and_process_data()
-    dataset = TweetSet(pd.concat([keyword_features, text_data], axis=1), labels)
+    keyword_data, location_data, text_data, labels = load_and_process_data(mode='train')
+    dataset = TweetSet(pd.concat([keyword_data, location_data, text_data], axis=1), labels)
 
     # 5折交叉验证
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -33,7 +41,8 @@ def train(args):
         val_loader = DataLoader(val_subset, batch_size=args.batch_size, shuffle=False)
 
         # 初始化模型
-        model = MultimodalModel(num_keyword_features=222, num_location_features=3)
+        model = MultimodalModel(num_keyword_features=keyword_data.shape[1], 
+                                num_location_features=location_data.shape[1])
         model.to(device)
         
         # 定义优化器和学习率调度
@@ -48,8 +57,8 @@ def train(args):
             total_train_loss = 0
             for batch in train_loader:
                 input_ids, attention_mask, other_features, labels = [x.to(device) for x in batch]
-                keyword_features = other_features[:, :222]  # 分离 keyword 特征
-                location_features = other_features[:, 222:]  # 分离 location 特征
+                keyword_features = other_features[:, :keyword_data.shape[1]]  # 分离 keyword 特征
+                location_features = other_features[:, keyword_data.shape[1]:]  # 分离 location 特征
                 
                 optimizer.zero_grad()
                 outputs = model(input_ids, attention_mask, keyword_features, location_features)
@@ -69,8 +78,8 @@ def train(args):
             with torch.no_grad():
                 for batch in val_loader:
                     input_ids, attention_mask, other_features, labels = [x.to(device) for x in batch]
-                    keyword_features = other_features[:, :222]
-                    location_features = other_features[:, 222:]
+                    keyword_features = other_features[:, :keyword_data.shape[1]]
+                    location_features = other_features[:, keyword_data.shape[1]:]
                     
                     outputs = model(input_ids, attention_mask, keyword_features, location_features)
                     loss = criterion(outputs.squeeze(), labels.float())
@@ -78,14 +87,6 @@ def train(args):
 
             avg_val_loss = total_val_loss / len(val_loader)
             wandb.log({"val_loss": avg_val_loss})
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Train a multimodal BERT model")
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
-    parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
-    parser.add_argument('--epochs', type=int, default=3, help='Number of epochs')
-    parser.add_argument('--wandb_project', type=str, default='bert-multimodal', help='wandb project name')
-    return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
