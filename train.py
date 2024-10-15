@@ -15,12 +15,15 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
     parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
     parser.add_argument('--epochs', type=int, default=3, help='Number of epochs')
+    parser.add_argument('--wandb_run', type=str, default='run1', help='wandb run name')
     parser.add_argument('--wandb_project', type=str, default='bert-multimodal', help='wandb project name')
     return parser.parse_args()
 
 def train(args):
     # 初始化 wandb
     wandb.init(project=args.wandb_project)
+    wandb.run.name = args.wandb_run
+    wandb.run.save()
     
     # 加载并处理数据
     keyword_data, location_data, text_data, labels = load_and_process_data(mode='train')
