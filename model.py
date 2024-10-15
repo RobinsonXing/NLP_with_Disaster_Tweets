@@ -20,7 +20,7 @@ class MultimodalModel(nn.Module):
         bert_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
         bert_pooled_output = bert_output.pooler_output
 
-        # 处理数值特征
+        # 分别处理数值特征
         keyword_output = torch.relu(self.fc_keywords(keyword_features))
         location_output = torch.relu(self.fc_location(location_features))
 

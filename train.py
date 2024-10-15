@@ -59,9 +59,7 @@ def train(args):
         for epoch in range(args.epochs):
             total_train_loss = 0
             for batch in train_loader:
-                input_ids, attention_mask, other_features, labels = [x.to(device) for x in batch]
-                keyword_features = other_features[:, :keyword_data.shape[1]]  # 分离 keyword 特征
-                location_features = other_features[:, keyword_data.shape[1]:]  # 分离 location 特征
+                input_ids, attention_mask, keyword_features, location_features, labels = [x.to(device) for x in batch]
                 
                 optimizer.zero_grad()
                 outputs = model(input_ids, attention_mask, keyword_features, location_features)
@@ -80,9 +78,7 @@ def train(args):
             total_val_loss = 0
             with torch.no_grad():
                 for batch in val_loader:
-                    input_ids, attention_mask, other_features, labels = [x.to(device) for x in batch]
-                    keyword_features = other_features[:, :keyword_data.shape[1]]
-                    location_features = other_features[:, keyword_data.shape[1]:]
+                    input_ids, attention_mask, keyword_features, location_features, labels = [x.to(device) for x in batch]
                     
                     outputs = model(input_ids, attention_mask, keyword_features, location_features)
                     loss = criterion(outputs.squeeze(), labels.float())

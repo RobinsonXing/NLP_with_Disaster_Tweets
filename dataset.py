@@ -23,6 +23,8 @@ class TweetSet(Dataset):
 
     def __getitem__(self, index):
         text = str(self.data.iloc[index]['text'])
+        keyword_features = self.data.iloc[index].filter(like='kw').values
+        location_features = self.data.iloc[index].filter(like='loc').values
         other_features = self.data.iloc[index].drop('text').values  # 其他特征
         other_features = other_features.astype(float)  # 强制转换为浮点数
 
@@ -40,14 +42,15 @@ class TweetSet(Dataset):
         input_ids = encoding['input_ids'].squeeze(0)
         attention_mask = encoding['attention_mask'].squeeze(0)
 
-        # 将其他特征转换为张量
-        other_features = torch.tensor(other_features, dtype=torch.float32)
+        # 将 keyword 和 location 特征分别返回
+        keyword_features = torch.tensor(keyword_features, dtype=torch.float32)
+        location_features = torch.tensor(location_features, dtype=torch.float32)
 
         if self.labels is not None:
             label = torch.tensor(self.labels.iloc[index], dtype=torch.float32)
-            return input_ids, attention_mask, other_features, label
+            return input_ids, attention_mask, keyword_features, location_features, label
         else:
-            return input_ids, attention_mask, other_features
+            return input_ids, attention_mask, keyword_features, location_features
 
 def load_and_process_data(mode:Literal['train', 'test']):
     """
@@ -62,12 +65,12 @@ def load_and_process_data(mode:Literal['train', 'test']):
 
     # 处理 keyword 列：独热编码，并填充空值为 'unknown'
     all_data['keyword'].fillna('unknown', inplace=True)
-    keywords = pd.get_dummies(all_data, columns=['keyword'], prefix='kw')
+    keywords = pd.get_dummies(all_data['keyword'], prefix='kw')
 
     # 处理 location 列
     all_data['location'] = all_data['location'].fillna('unknown')
     all_data['location'] = all_data['location'].apply(lambda x: 'New York' if 'New York' in x else ('other' if x != 'unknown' else 'unknown'))
-    locations = pd.get_dummies(all_data, columns=['location'], prefix='loc')
+    locations = pd.get_dummies(all_data['location'], prefix='loc')
 
     # 提取对应特征
     texts = all_data['text']
