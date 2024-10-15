@@ -22,7 +22,7 @@ class TweetSet(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        text = self.data.iloc[index]['text']
+        text = str(self.data.iloc[index]['text'])
         other_features = self.data.iloc[index].drop('text').values  # 其他特征
 
         # BERT 分词
