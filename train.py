@@ -71,7 +71,7 @@ def train(args):
                 total_train_loss += loss.item()
 
             avg_train_loss = total_train_loss / len(train_loader)
-            # wandb.log({"train_loss": avg_train_loss})
+            # `wandb.log({"train_loss": avg_train_loss})
 
             # 验证
             model.eval()
