@@ -13,7 +13,7 @@ from model import MultimodalModel
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a multimodal BERT model")
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
+    parser.add_argument('--batch_size', type=int, default=128, help='Batch size')
     parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
     parser.add_argument('--epochs', type=int, default=10, help='Number of epochs')
     parser.add_argument('--cuda', type=int, default=0, help='worker of cuda')
