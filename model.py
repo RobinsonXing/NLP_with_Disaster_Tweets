@@ -9,10 +9,10 @@ class MultimodalModel(nn.Module):
         
         # 数值特征处理
         self.fc_keywords = nn.Linear(num_keyword_features, 64)
-        self.fc_location = nn.Linear(num_location_features, 32)
+        self.fc_location = nn.Linear(num_location_features, 16)
         
         # 融合后的全连接层
-        self.fc_combined = nn.Linear(self.bert.config.hidden_size + 64 + 32, 64)
+        self.fc_combined = nn.Linear(self.bert.config.hidden_size + 64 + 16, 64)
         self.classifier = nn.Linear(64, num_labels)
     
     def forward(self, input_ids, attention_mask, keyword_features, location_features):
