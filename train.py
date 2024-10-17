@@ -33,7 +33,7 @@ def train(args):
 
     # 5折交叉验证
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
-    device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{args.cuda}")
 
     for fold, (train_idx, val_idx) in enumerate(kf.split(dataset)):
         print(f"Fold {fold + 1}")
