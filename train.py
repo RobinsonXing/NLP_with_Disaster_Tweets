@@ -21,9 +21,9 @@ def parse_args():
 
 def train(args):
     # 初始化 wandb
-    wandb.init(project=args.wandb_project)
-    wandb.run.name = args.wandb_run
-    wandb.run.save()
+    # wandb.init(project=args.wandb_project)
+    # wandb.run.name = args.wandb_run
+    # wandb.run.save()
     
     # 加载并处理数据
     keyword_data, location_data, text_data, labels = load_and_process_data(mode='train')
@@ -71,7 +71,7 @@ def train(args):
                 total_train_loss += loss.item()
 
             avg_train_loss = total_train_loss / len(train_loader)
-            wandb.log({"train_loss": avg_train_loss})
+            # wandb.log({"train_loss": avg_train_loss})
 
             # 验证
             model.eval()
@@ -85,7 +85,8 @@ def train(args):
                     total_val_loss += loss.item()
 
             avg_val_loss = total_val_loss / len(val_loader)
-            wandb.log({"val_loss": avg_val_loss})
+            print(avg_train_loss)
+            # wandb.log({"val_loss": avg_val_loss})
 
 if __name__ == "__main__":
     args = parse_args()
