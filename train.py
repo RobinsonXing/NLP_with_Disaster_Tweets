@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
     parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
     parser.add_argument('--epochs', type=int, default=3, help='Number of epochs')
+    parser.add_argument('--cuda', type=int, default=0, help='worker of cuda')
     parser.add_argument('--wandb_run', type=str, default='run1', help='wandb run name')
     parser.add_argument('--wandb_project', type=str, default='bert-multimodal', help='wandb project name')
     return parser.parse_args()
@@ -32,7 +33,7 @@ def train(args):
 
     # 5折交叉验证
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu")
 
     for fold, (train_idx, val_idx) in enumerate(kf.split(dataset)):
         print(f"Fold {fold + 1}")
