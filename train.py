@@ -22,9 +22,9 @@ def parse_args():
 
 def train(args):
     # 初始化 wandb
-    # wandb.init(project=args.wandb_project)
-    # wandb.run.name = args.wandb_run
-    # wandb.run.save()
+    wandb.init(project=args.wandb_project)
+    wandb.run.name = args.wandb_run
+    wandb.run.save()
     
     # 加载并处理数据
     keyword_data, location_data, text_data, labels = load_and_process_data(mode='train')
@@ -74,7 +74,7 @@ def train(args):
 
             avg_train_loss = total_train_loss / len(train_loader)
             print(f'trainning loss for epoch{epoch}: {avg_train_loss}')
-            # wandb.log({"train_loss": avg_train_loss})
+            wandb.log({"train_loss": avg_train_loss})
 
             # 验证
             model.eval()
@@ -90,7 +90,13 @@ def train(args):
 
             avg_val_loss = total_val_loss / len(val_loader)
             print(f'validation loss for epoch{epoch}: {avg_val_loss}')
-            # wandb.log({"val_loss": avg_val_loss})
+            wandb.log({"val_loss": avg_val_loss})
+
+            # 每个 epoch 后保存模型参数
+            model_path = f'fold{fold}_epoch{epoch}'
+            torch.save(model.state_dict(), model_path)  # 保存模型参数为 .pt 文件
+            wandb.save(model_path)
+
 
 if __name__ == "__main__":
     args = parse_args()
