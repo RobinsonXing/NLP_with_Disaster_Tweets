@@ -1,6 +1,7 @@
+import pandas as pd
 import argparse
 import wandb
-import pandas as pd
+from tqdm import tqdm
 
 import torch
 from torch.utils.data import DataLoader
@@ -57,8 +58,9 @@ def train(args):
         # 开始训练
         model.train()
         for epoch in range(args.epochs):
+            print(f'begin trainning the epoch{epoch}')
             total_train_loss = 0
-            for batch in train_loader:
+            for batch in tqdm(train_loader):
                 input_ids, attention_mask, keyword_features, location_features, labels = [x.to(device) for x in batch]
                 
                 optimizer.zero_grad()
@@ -71,13 +73,15 @@ def train(args):
                 total_train_loss += loss.item()
 
             avg_train_loss = total_train_loss / len(train_loader)
-            # `wandb.log({"train_loss": avg_train_loss})
+            print(f'trainning loss for epoch{epoch}: {avg_train_loss}')
+            # wandb.log({"train_loss": avg_train_loss})
 
             # 验证
             model.eval()
             total_val_loss = 0
+            print(f'begin validating the eopch{epoch}')
             with torch.no_grad():
-                for batch in val_loader:
+                for batch in tqdm(val_loader):
                     input_ids, attention_mask, keyword_features, location_features, labels = [x.to(device) for x in batch]
                     
                     outputs = model(input_ids, attention_mask, keyword_features, location_features)
@@ -85,7 +89,7 @@ def train(args):
                     total_val_loss += loss.item()
 
             avg_val_loss = total_val_loss / len(val_loader)
-            print(avg_train_loss)
+            print(f'validation loss for epoch{epoch}: {avg_val_loss}')
             # wandb.log({"val_loss": avg_val_loss})
 
 if __name__ == "__main__":

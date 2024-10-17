@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from typing import Literal
 
@@ -22,11 +23,9 @@ class TweetSet(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        text = str(self.data.iloc[index]['text'])
+        text = self.data.iloc[index]['text']
         keyword_features = self.data.iloc[index].filter(like='kw').values
         location_features = self.data.iloc[index].filter(like='loc').values
-        other_features = self.data.iloc[index].drop('text').values  # 其他特征
-        other_features = other_features.astype(float)  # 强制转换为浮点数
 
         # BERT 分词
         encoding = self.tokenizer.encode_plus(
@@ -43,6 +42,8 @@ class TweetSet(Dataset):
         attention_mask = encoding['attention_mask'].squeeze(0)
 
         # 将 keyword 和 location 特征分别返回
+        keyword_features = np.array(keyword_features).astype(np.float32)
+        location_features = np.array(location_features).astype(np.float32)
         keyword_features = torch.tensor(keyword_features, dtype=torch.float32)
         location_features = torch.tensor(location_features, dtype=torch.float32)
 
